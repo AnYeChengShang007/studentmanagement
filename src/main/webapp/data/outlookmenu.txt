@@ -1,0 +1,5 @@
+[
+	{ id: "user", text: "学生信息管理", iconCls: "icon-user"},
+	{ id: "student", pid: "user", text: "学生管理", iconCls: "icon-add", url: "/pages/student/studentinfolist.html" },
+	{ id: "score", pid: "user", text: "成绩管理", iconCls: "icon-edit", url: "/pages/mark/studentscorelist.html" },
+]
