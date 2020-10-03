@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>新增学生信息</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+</head>
+<body>
+	<form id="form1" method="post">
+		<fieldset style="border: solid 1px #aaa; padding: 3px;">
+			<legend>修改学生信息</legend>
+			<table>
+				<tr>
+					<td style="width: 80px;">学号：</td>
+					<td style="width: 150px;"><input name="stuid" readonly="true"
+						id="stuid" class="mini-textbox" emptyText="自动生成无需填写" /></td>
+					<td style="width: 80px;">专业：</td>
+					<td style="width: 150px;"><input name="profession"
+						class="mini-combobox" valueField="id" textField="text"
+						url="/data/profession.txt" emptyText="请选择专业" /></td>
+				</tr>
+				<tr>
+					<td style="width: 80px;">姓名：</td>
+					<td style="width: 150px;"><input name="stuname"
+						readonly="true" class="mini-textbox" emptyText="请填写姓名" /></td>
+					<td style="width: 80px;">入学日期：</td>
+					<td><input name="adddate" class="mini-textbox"
+						allowInput="false" /></td>
+				</tr>
+				<tr>
+					<td style="width: 80px;">性别：</td>
+					<td style="width: 150px;"><input name="sex" readonly="true"
+						class="mini-textbox" /></td>
+					<td style="width: 80px;">身份证号：</td>
+					<td style="width: 150px;"><input name="idnum" readonly="true"
+						class="mini-textbox" /></td>
+				</tr>
+				<tr>
+					<td style="width: 80px;">总学分：</td>
+					<td style="width: 150px;"><input name="totalscore"
+						readonly="true" value="0" class="mini-textbox" /></td>
+					<td style="width: 80px;">其他说明：</td>
+					<td style="width: 150px;"><input name="notes"
+						class="mini-textarea" /></td>
+				</tr>
+			</table>
+		</fieldset>
+		<div style="text-align: center; padding: 10px;">
+			<a class="mini-button" onclick="onOk">保存修改</a>
+		</div>
+	</form>
+	<script>
+		mini.parse();
+		var form = new mini.Form("form1");
+
+		var stuid = location.search.substr(7, 9);
+		function setData(stuid) {
+			$.ajax({
+				url : "/studentinfolistaction?method=studentinfo&stuid="
+						+ stuid,
+				cache : false,
+				success : function(res) {
+					var o = mini.decode(res);
+					if (o.sex == 1) {
+						o.sex = '男';
+					} else {
+						o.sex = '女';
+					}
+					form.setData(o);
+				}
+			});
+		}
+		setData(stuid);
+		function closeWindow(action) {
+			if (window.CloseOwnerWindow)
+				return window.CloseOwnerWindow(action);
+			else
+				window.close();
+		}
+
+		function onOk() {
+			var o = form.getData();
+			if (o.sex == '男') {
+				o.sex = 1;
+			} else {
+				o.sex = 0;
+			}
+			form.validate();
+			if (form.isValid() == false)
+				return;
+			var json = mini.encode(o);
+			mini.confirm("确定修改吗?", "提示", function(e) {
+				if (e == 'ok') {
+					$.ajax({
+						url : "/studentinfolistaction?method=update",
+						type : 'post',//如果不写type，默认为get，那么filter不会处理get请求的乱码
+						data : {
+							data : json
+						},
+						success : function(res) {
+							mini.confirm(res, "提示", function() {
+								closeWindow("save");
+							})
+						}
+					});
+				}
+			});
+		}
+	</script>
+</body>
+</html>

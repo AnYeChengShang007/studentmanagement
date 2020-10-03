@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>成绩管理</title>
+<script src="../../scripts/boot.js" type="text/javascript"></script>
+<style type="text/css">
+html, body {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.red {
+	color: red;
+	font-weight: bloder;
+}
+</style>
+
+</head>
+<body>
+	<div class="mini-toolbar" style="padding: 2px; border-bottom: 0;">
+		<table style="width: 100%;">
+			<tr>
+				<td style="width: 100%;"><a class="mini-button"
+					iconCls="icon-save" plain="true" onclick="add">新增成绩</a></td>
+				<td style="white-space: nowrap;"><label
+					style="font-family: Verdana;">姓名: </label> <input emptyText="请输入姓名"
+					id="namekey" class="mini-textbox" /><label
+					style="font-family: Verdana;">&nbsp;&nbsp;时间: </label> <input
+					id="from" class="mini-datepicker" style="width: 200px;"
+					nullValue="null" allowInput="false" format="yyyy-MM-dd" valueType="String" /><label
+					style="font-family: Verdana;">&nbsp;&nbsp;至 </label> <input id="to"
+					class="mini-datepicker" allowInput="false" style="width: 200px;"
+					format="yyyy-MM-dd" valueType="String"/> <a class="mini-button"
+					iconCls="icon-search" plain="true" onclick="onSearch()">查询</a></td>
+					<!-- 日期上加 valueType="String" 可以上传2020-01-01-->
+			</tr>
+		</table>
+	</div>
+	<div class="mini-fit">
+
+		<div id="datagrid1" class="mini-datagrid"
+			style="width: 100%; height: 100%;" url="/studentscorelist"
+			idField="id" sizeList="[5,10,20,50]" pageSize="10">
+			<div property="columns">
+				<div type="indexcolumn" headerAlign="center">序号</div>
+				<div field="stuname" width="120" headerAlign="center" align="center"
+					allowSort="true">姓名</div>
+				<div field="coursename" width="120" headerAlign="center"
+					align="center">课程名称</div>
+				<div field="basescore" width="100" align="center"
+					headerAlign="center">平时成绩</div>
+				<div field="testscore" width="100" allowSort="true"
+					headerAlign="center" align="center">考核成绩</div>
+				<div renderer="onFinalScoreRenderer" field="finalscore" width="100"
+					allowSort="true" headerAlign="center" align="center">最终成绩</div>
+				<div field="adddate" width="100" allowSort="true"
+					headerAlign="center" align="center">时间</div>
+				<div field="createtime" width="100" headerAlign="center"
+					align="center" renderer="onActionRenderer">操作按钮</div>
+			</div>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+		mini.parse();
+		var grid = mini.get("datagrid1");
+		grid.load();
+
+		function onFinalScoreRenderer(e) {
+			if (e.value < 60) {
+				e.cellCls = "red";
+			}
+			return e.value;
+		}
+		function onActionRenderer(e) {
+			var grid = e.sender;
+			var record = e.record;
+			var uid = record._uid;
+			var rowIndex = e.rowIndex;
+			var s = '<a  class="mini-button" href="javascript:delRow(\'' + uid
+					+ '\')">删除</a>';
+			return s;
+		}
+
+		function delRow(uid) {
+			var row = grid.getRowByUid(uid);
+			mini.confirm("确定删除吗?","提示",function(e){
+				if(e=='ok'){
+					$.ajax({
+						url : "/studentscorelist?method=delete&markid=" + row.markid,
+						success : function(res) {
+							mini.confirm(res, "提示", function() {
+								grid.reload();
+							});
+						}
+					});
+				}
+			})
+		}
+
+		function onSearch() {
+			var namekey = mini.get("namekey").getValue();
+			var from = mini.get("from").getValue();
+			var to = mini.get("to").getValue();
+			console.log(namekey)
+			console.log(from)
+			console.log(to)
+			grid.load({
+				namekey : namekey,
+				from : from,
+				to : to
+			});
+		}
+		function add(){
+			mini.open({
+                url: "/pages/mark/studentscoreadd.html",
+                title: "新增信息", width: 600, height: 400,
+                allowResize:false,
+                onload: function () {
+                },
+                ondestroy: function (action) {
+                    grid.reload();
+                }
+            });
+		}
+	</script>
+
+</body>
+</html>
